@@ -179,3 +179,63 @@ mutierenden Path-Methoden (`offset()`, `addPath()`, etc.).
 `SkPath`-Methoden in React Native Skia sind mehrheitlich **mutierend** (sie
 geben `this` zurück). Im Zweifel die native C++ JSI-Bindung prüfen oder
 `.copy()` vor jeder Mutation aufrufen.
+
+---
+
+## 7. Animationsgeschwindigkeit: Counter-basiert vs. zeitbasiert
+
+### Problem
+`useSway` verwendete `Math.sin(tick * 0.003 * speed + phase) * 0.12` mit
+`tick` als Frame-Counter (+1 pro requestAnimationFrame bei 60 fps).
+
+Das ergibt:
+- `0.003` rad/Frame × 60 fps = `0.18` rad/s
+- Eine volle Sinus-Periode dauert `2π / 0.18 ≈ 35` Sekunden
+- Peak-Geschwindigkeit: `0.003 × 0.12 = 0.00036` rad/Frame = `0.02`°/Frame
+- Bei 30px Blattlänge: `0.01` Pixel Tip-Bewegung pro Frame
+
+→ **Unsichtbar**, obwohl rAF-Loop und useState-Re-Rendering korrekt laufen.
+
+### Fix
+Zeitbasierte Animation mit `requestAnimationFrame` + `useState`:
+
+```ts
+export function useSway(phase: number, speed: number): number {
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    const start = Date.now();
+    let rafId: number;
+    function loop() {
+      setElapsed(Date.now() - start);
+      rafId = requestAnimationFrame(loop);
+    }
+    rafId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
+
+  const freq = 0.003;       // rad/ms → 2π/0.003 ≈ 2s pro Periode
+  return Math.sin(elapsed * freq * speed + phase) * 0.12;
+}
+```
+
+- `elapsed` in Millisekunden → `elapsed * 0.003` = `3` rad/s → **~2s pro Periode**
+- Frame-Drops: kein Problem, da `Date.now()` die echte Zeit liefert
+- `±0.12` rad Amplitude ≈ `±7°` → bei 30px Blatt: `±3.6` Pixel Tip-Bewegung
+
+### Faustregel für Animationskonstanten
+```
+Geschwindigkeit in rad/s:       freq × 1000 (weil elapsed in ms)
+Periodendauer in Sekunden:      2π / (freq × 1000)
+Bewegung pro Frame bei 60fps:   freq × amplitude × 16.67 [rad]
+Tip-Bewegung pro Frame [px]:    freq × amplitude × 16.67 × leafLength
+```
+
+Für sichtbare Animationen: Periodendauer ≤ 3s, Tip-Bewegung ≥ 1px/Frame am
+steilsten Punkt der Kurve.
+
+### Regel
+**Counter-basierte Animation (`tick * const`) ist Frame-Rate-abhängig und
+produziert bei 60fps oft überraschend langsame Bewegungen.** Verwende
+zeitbasierte Werte (ms seit Start) für vorhersagbare, Frame-Rate-unabhängige
+Animationen. Faustregel: `freq = 0.003` (= 3 rad/s) für eine ~2s Periode.
