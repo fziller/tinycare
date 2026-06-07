@@ -13,7 +13,7 @@ import { getTimeOfDay } from '../src/components/room/timeOfDay';
 import { Wall } from '../src/components/room/Wall';
 import { Floor } from '../src/components/room/Floor';
 import { MainPlant } from '../src/components/room/plant/MainPlant';
-import { HangingPlant } from '../src/components/room/HangingPlant';
+import { HangingPlant } from '../src/components/room/hanging/HangingPlant';
 import { Pet } from '../src/components/room/pet/Pet';
 import { Aquarium } from '../src/components/room/Aquarium';
 import { Carafe } from '../src/components/room/Carafe';

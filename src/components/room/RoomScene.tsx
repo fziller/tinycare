@@ -12,7 +12,7 @@ import { Shelf } from './Shelf';
 import { Bookshelf } from './Bookshelf';
 import { PictureFrame } from './PictureFrame';
 import { MainPlant } from './plant/MainPlant';
-import { HangingPlant } from './HangingPlant';
+import { HangingPlant } from './hanging/HangingPlant';
 import { PlantPot } from './PlantPot';
 import { Pet } from './pet/Pet';
 import { Aquarium } from './Aquarium';

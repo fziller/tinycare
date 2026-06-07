@@ -431,7 +431,7 @@ Alle neuen Komponenten nutzen folgende Hooks statt der alten Muster:
 | # | Komponente | Status | Datum |
 |---|-----------|--------|-------|
 | 1 | Pet (Sub-Component Refactor) | done | 2026-06-07 |
-| 2 | HangingPlant | open | — |
+| 2 | HangingPlant | done | 2026-06-07 |
 | 3 | Aquarium | open | — |
 | 4 | Shelf | open | — |
 | 5 | Carafe | open | — |
