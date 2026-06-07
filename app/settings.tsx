@@ -144,6 +144,12 @@ export default function SettingsRoute() {
             {devEnabled && (
               <DevSliders values={devSliderValues} onChange={(key, value) => setDevValue(key as any, value)} onReset={resetDev} />
             )}
+            <Pressable
+              onPress={() => router.push('/dev-lab')}
+              style={styles.labButton}
+            >
+              <Text style={styles.labButtonText}>🧪 Dev Lab – Einzelelemente testen</Text>
+            </Pressable>
           </>
         )}
 
@@ -234,6 +240,19 @@ const styles = StyleSheet.create({
     height: 220,
     borderRadius: radii.md,
     backgroundColor: colors.cardWarm,
+  },
+  labButton: {
+    minHeight: 44,
+    borderRadius: radii.md,
+    backgroundColor: colors.sageSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: spacing.sm,
+  },
+  labButtonText: {
+    color: colors.sage,
+    fontWeight: '900',
+    fontSize: 13,
   },
   dangerButton: {
     minHeight: 52,

@@ -11,7 +11,7 @@ import { Lamp } from './Lamp';
 import { Shelf } from './Shelf';
 import { Bookshelf } from './Bookshelf';
 import { PictureFrame } from './PictureFrame';
-import { MainPlant } from './MainPlant';
+import { MainPlant } from './plant/MainPlant';
 import { HangingPlant } from './HangingPlant';
 import { PlantPot } from './PlantPot';
 import { Pet } from './Pet';
@@ -22,7 +22,7 @@ import { WellnessBar } from './WellnessBar';
 import { colors, radii } from '../../theme';
 
 const SCENE_W = 360;
-const SCENE_H = 178;
+const SCENE_H = 240;
 
 export function RoomScene({ needValues, glow, timeOfDay: _tod, compact = false }: RoomSceneProps) {
   const timeOfDay = _tod ?? getTimeOfDay();
