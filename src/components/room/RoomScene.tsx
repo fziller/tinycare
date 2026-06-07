@@ -14,7 +14,7 @@ import { PictureFrame } from './PictureFrame';
 import { MainPlant } from './plant/MainPlant';
 import { HangingPlant } from './HangingPlant';
 import { PlantPot } from './PlantPot';
-import { Pet } from './Pet';
+import { Pet } from './pet/Pet';
 import { Aquarium } from './Aquarium';
 import { Carafe } from './Carafe';
 import { Particles } from './Particles';
@@ -100,6 +100,7 @@ export function RoomScene({ needValues, glow, timeOfDay: _tod, compact = false }
           <Pet
             social={needValues.social ?? 72}
             movement={needValues.movement ?? 72}
+            glow={glow}
             height={height}
           />
         )}

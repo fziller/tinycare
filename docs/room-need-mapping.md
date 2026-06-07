@@ -19,7 +19,8 @@ Alle Werte sind 0–100, es sei denn, es ist anders vermerkt.
 | **food** | Shelf (Snack-Bowl), MainPlant (Früchte) | Leere Schale, keine Früchte | Halbvolle Schale | Volle Schale, Früchte an Pflanze | Frucht-Erscheinung zusätzlich an glow gebunden |
 | **energy** | Sun, Lamp (Helligkeit), Gesamtkontrast | Matte Sonne, flaues Bild | Normale Helligkeit | Strahlende Sonne, hoher Kontrast | Sun-Position via timeOfDay |
 | **hygiene** | Floor (Flecken), Window (Schlieren) | Dreckflecken, milchige Scheibe | Sauber | Blitzblank, glänzend | Flecken-Dichte steigt exponentiell unter 30 |
-| **social** | Pet | Traurig, versteckt, still | Neutral, sitzt | Fröhlich, hüpft, spielt | Pet-Animationen via Movement zusätzlich beeinflusst |
+| **social** | Pet | **State 0**: zitternde Kugel, X-Augen | **State 1–2**: sitzt klein (Ohren hängend/wedelt) | **State 3–7**: idle/hop/play (Pfoten, Tail, Herz) | 8 States: social×movement×glow, 2D-Grid |
+| | | `PetBody` (trembleX/Y), `PetEye` (.xEyed) | `PetTail` (wagAngle ab State 2) | `PetTail`+, `PetPaw`, `PetNose`, `PetHeart` | **Sub-Components**: `pet/PetBody/Ear/Eye/Nose/Mouth/Tail/Paw/Heart` |
 | **fun** | Aquarium, Bookshelf, Particles | Leer, wenige Fische | Teilweise bestückt | Viele Fische, volles Regal, bunte Partikel | |
 | **comfort** | Shelf (Kissen), Lamp (Farbtemperatur) | Kaltes Licht, kein Kissen | Neutral | Warmes Licht, weiches Kissen | |
 | **environment** | Wall (Farbe), Plants (Sättigung) | Grau, entsättigt, trüb | Normal | Sattes Grün, lebendig | Wand zusätzlich via timeOfDay |

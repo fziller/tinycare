@@ -14,7 +14,7 @@ import { Wall } from '../src/components/room/Wall';
 import { Floor } from '../src/components/room/Floor';
 import { MainPlant } from '../src/components/room/plant/MainPlant';
 import { HangingPlant } from '../src/components/room/HangingPlant';
-import { Pet } from '../src/components/room/Pet';
+import { Pet } from '../src/components/room/pet/Pet';
 import { Aquarium } from '../src/components/room/Aquarium';
 import { Carafe } from '../src/components/room/Carafe';
 import { Lamp } from '../src/components/room/Lamp';
@@ -62,6 +62,7 @@ const ELEMENTS: Record<string, ElementDef> = {
     sliders: [
       { key: 'social', label: 'Social', min: 0, max: 100, default: 72 },
       { key: 'movement', label: 'Movement', min: 0, max: 100, default: 72 },
+      { key: 'glow', label: 'Glow', min: 0, max: 100, default: 50 },
     ],
   },
   Aquarium: {
@@ -189,7 +190,7 @@ function renderElement(
     case 'HangingPlant':
       return <HangingPlant hydration={values.hydration} glow={values.glow} />;
     case 'Pet':
-      return <Pet social={values.social} movement={values.movement} height={height} />;
+      return <Pet social={values.social} movement={values.movement} glow={values.glow} height={height} />;
     case 'Aquarium':
       return <Aquarium fun={values.fun} glow={values.glow} height={height} />;
     case 'Carafe':

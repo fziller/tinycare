@@ -14,25 +14,40 @@ Jeder State fügt **neue sichtbare Elemente** hinzu, nicht nur Skalierung existi
 
 ## 1. Pet — `social × 4` + `movement × 2` = **8 States**
 
-**Status: open**
+**Status: done**
 
 **Need-Mapping:** `PetState = f(social, movement)`, 6×3-Raster, plus glow als Lever.
 
-| State | social | movement | glow | Visual | Neue Elemente |
-|-------|--------|----------|------|--------|---------------|
-| 0 | <20 | beliebig | beliebig | **Hide** – zitternde Kugel, Augen zu | Grundkörper (Kreis) |
-| 1 | 20–40 | <30 | beliebig | **Sit small** – kleiner Körper, hängende Ohren | Ohren (RoundedRect), Augen (2 Kreise) |
-| 2 | 20–40 | ≥30 | beliebig | **Sit wag** – sitzt, Schwanz wedelt langsam | Schwanz (cubicTo-Path mit useSway) |
-| 3 | 40–65 | <40 | beliebig | **Idle** – normal, Ohren neutral, große Augen | Pfoten (Halbkreise unten), Nase |
-| 4 | 40–65 | ≥40 | <2 | **Idle+** – normal + Fell-Glanz | Radialer Highlight auf Körper |
-| 5 | 40–65 | ≥40 | ≥2 | **Idle++** – normal + Fell-Glanz + Blinzeln | Animierter Lidschluss alle 3–6s |
-| 6 | >65 | 40–70 | beliebig | **Hop** – aufrecht, Ohren hoch, Pfoten vom Boden | Körper gestreckt, Ohren groß |
-| 7 | >65 | >70 | beliebig | **Play** – Körper groß + Herzchen + Nase leuchtet | Herz-Path (cubicTo) schwebend, Nase leuchtet |
+| State | social | movement | glow | Visual | Sub-Components | Neue Technik |
+|-------|--------|----------|------|--------|---------------|--------------|
+| 0 | <20 | beliebig | beliebig | **Hide** – zitternde Kugel, X-Augen | PetBody (.trembleX/Y), PetEye (.xEyed) | Reanimated SharedValue für bodyR, Tremor per useReanimatedSway |
+| 1 | 20–40 | <30 | beliebig | **Sit small** – kleiner Körper, hängende Ohren | PetBody, PetEar(.rotate=-0.3), PetEye | useReanimatedNumeric für earAngle-Rotation |
+| 2 | 20–40 | ≥30 | beliebig | **Sit wag** – sitzt, Schwanz wedelt | PetBody, PetEar, PetTail(.wagAngle) | PetTail mit useDerivedValue-Transform; useReanimatedSway für Schwanz |
+| 3 | 40–65 | <40 | beliebig | **Idle** – normal, Ohren neutral, Pfoten | PetBody, PetEar, PetEye, PetTail, PetPaw×2, PetNose | PetPaw mit SharedValue-Position (pawLX/pawRX) |
+| 4 | 40–65 | ≥40 | <2 | **Idle+** – normal + Fell-Glanz | PetBody(.glowHighlight), PetEar, PetTail, PetPaw, PetNose | Bedingtes Render des Highlight-Paths im PetBody |
+| 5 | 40–65 | ≥40 | ≥2 | **Idle++** – normal + Glanz + Blinzeln | PetEye(.blinking), PetBody(.glowHighlight), PetTail | useBlink via setTimeout + React State; blink overlay line |
+| 6 | >65 | 40–70 | beliebig | **Hop** – aufrecht, Ohren hoch, gestreckt | PetBody(.bodyScaleY=1.3), PetEar(.rotate=0.2), PetTail | useReanimatedNumeric für bodyScaleY |
+| 7 | >65 | >70 | beliebig | **Play** – Körper groß + Herz + Nase leuchtet | PetHeart, PetNose(.noseGlow), PetBody, PetTail | PetHeart mit useDerivedValue-Float; RadialGradient auf Nase |
+
+**Sub-Components (je eine Datei unter `src/components/room/pet/`):**
+- `PetBody.tsx` – Ei-förmiger Körper (cubicTo-Path) + RadialGradient + BlurMask-Schatten + optionaler glowHighlight-Überzug
+- `PetEar.tsx` – cubicTo-Katzenohr + transform (Position, Skalierung, Rotation via SharedValues)
+- `PetEye.tsx` – offen/geschlossen via X-Overlay oder Circle + blink overlay (boolean < 1 Hz)
+- `PetTail.tsx` – TAIL_PATH (cubicTo) + wagAngle via useDerivedValue-Transform
+- `PetPaw.tsx` – PAW_PATH (cubicTo-Halbkreis) + dynamische Position via bodyR SharedValue
+- `PetHeart.tsx` – HEART_PATH (cubicTo) + Float/Drift via useDerivedValue
+- `PetNose.tsx` + `PetMouth.tsx` – Nase (Circle + RadialGradient) + Mund (cubicTo mood-Path via moodFromState)
+
+**Hooks (je eine Datei unter `src/components/room/hooks/`):**
+- `useReanimatedSway` – UI-thread Sinus-Animation via `useClock` + `useDerivedValue` (ersetzt alten `useSway` für neue Komponenten)
+- `useReanimatedNumeric` – Smooth Value-Transition via `useSharedValue` + `useEffect` + `withTiming`
 
 **Bausteine:**
-- `buildHeart()` − cubicTo-Path für Herz
-- `useBlink(interval)` − zufälliger Lidschluss via useSharedValue
-- Schwanz: cubicTo-Path (3 Segmente), Endpunkt über useSway oszillierend
+- `buildBodyPath()` in `petShapes.ts` – 4×cubicTo Ei-Form, 20×28 units
+- `TAIL_PATH` in `petShapes.ts` – 3×cubicTo geschwungener Schwanz
+- `HEART_PATH` in `petShapes.ts` – 4×cubicTo Herz-Form
+- `moodFromState(state)` in `petShapes.ts` – smile (≥6) / neutral (2–5) / sad (≤1)
+- `useBlink(enabled)` – Boolean via setTimeout-Kette alle 3–7s + 150ms Close
 
 ---
 
@@ -360,16 +375,54 @@ Erweiterungen in `app/dev-lab.tsx`:
 
 ---
 
+## Graphical Level
+
+Jede aufgewertete Komponente erreicht die folgenden grafischen Merkmale, analog zu Pet:
+
+| Merkmal | Vorher (Level 0) | Nachher (Level 1) |
+|---------|-----------------|-------------------|
+| Körperform | `<Circle>` oder `<RoundedRect>` | `cubicTo`-Ei-Path mit organischer Kontur |
+| Schatten | Keiner | `BlurMask` auf Kopie des Körper-Paths |
+| Farbe | Flat-Fill | `RadialGradient` (Highlight + Base + Shadow) |
+| Glow | Bedingter `<Circle>` | Bedingter Highlight-Path mit eigenem Gradient |
+| Per-Frame | `useState` + rAF (JS Thread) | `useReanimatedSway` / `useDerivedValue` (UI Thread) |
+| State-Transition | Instant | `useReanimatedNumeric` + `withTiming` (400ms Easing) |
+| Sub-Komponenten | Alles in einer Datei | Eine Datei pro visuellem Element im eigenen Ordner |
+| Bewegung | `<Group>` mit `transform={{tick}}` | `useDerivedValue`-Transform + SharedValue-Dependency |
+
+Ziel für alle 14 Komponenten in Phase 2: Level 1.
+
+## Animation Toolkit
+
+Alle neuen Komponenten nutzen folgende Hooks statt der alten Muster:
+
+| Hook | Quelle | Ersatz für | Rückgabetyp |
+|------|--------|-----------|-------------|
+| `useClock` | `@shopify/react-native-skia` | — | `SharedValue<number>` |
+| `useDerivedValue(fn)` | `react-native-reanimated` | — | `SharedValue<T>` |
+| `useReanimatedSway(phase, speed, amplitude)` | `src/hooks/useReanimatedSway.ts` | Altes `useSway(phase, speed)` | `SharedValue<number>` |
+| `useReanimatedNumeric(value, duration)` | `src/hooks/useReanimatedNumeric.ts` | Altes `useAnimatedNumeric` | `SharedValue<number>` |
+| `useSharedValue(initial)` | `react-native-reanimated` | `useState` für UI-Werte | `SharedValue<T>` |
+
+**Prinzipien:**
+- **UI Thread:** Alle per-Frame (60 fps) Änderungen laufen über SharedValues, nicht über React State.
+- **useDerivedValue statt useMemo für Transforms:** `const t = useDerivedValue(() => [{...}])` → `<Group transform={t}>`. Kein Re-Render bei SharedValue-Änderungen.
+- **useClock als Zeitbasis:** Ein Aufruf pro Komponente, `useDerivedValue` leitet Sway/Bob/Drift davon ab.
+- **withTiming für State-Übergänge:** bodyR, bodyScaleY, earAngle werden sanft interpoliert (400ms default).
+- **useState nur < 1 Hz:** Blink-Boolean, glowHighlight, showPaws – alles, was nur auf State-Wechsel feuert.
+- **Kein globaler rAF mehr:** `useSway.ts` wurde auf per-Hook rAF + Date.now() umgestellt. Neue Komponenten nutzen `useReanimatedSway` (kein rAF, rein UI Thread).
+
 ## Architektur-Regeln (für alle Komponenten)
 
 1. **`.copy()` vor `.transform()`** – Jeder Pfad der skaliert/transformiert wird
-2. **Kein `useMemo` mit Skia-Paths auf Animations-Deps** – Nur auf State-Wechsel
-3. **Paths statt Shapes** – Ein `cubicTo`-Path ist günstiger und flexibler als 6 `<Circle>`
-4. **Kein `#RRGGBBAA`** in Skia-Komponenten
-5. **Kein leerer Path** – immer `moveTo` + `close`
-6. **Neue Elemente hinzufügen, nicht nur skalieren** – Jeder State 1–7 fügt mindestens ein neues sichtbares Skia-Element hinzu
-7. **`useSway` für organische Bewegung** – Blätterwedeln, Schwanz, Flackern, Schweben
-8. **Jeder State muss im Dev Lab sichtbar sein**
+2. **`useReanimatedSway` statt `useSway` für neue Komponenten** – Alte Plant-Komponenten bleiben auf `useSway`, alle Neuen nutzen SharedValue-basiert
+3. **`useReanimatedNumeric` statt `useAnimatedNumeric`** – Alte Nutzung wird schrittweise migriert
+4. **SharedValue für animate, boolean für conditional** – Transform und Kontur via `useDerivedValue`; Sichtbarkeit (`showPaws`, `glowHighlight`) via React-Boolean
+5. **Paths statt Shapes** – Ein `cubicTo`-Path ist günstiger und flexibler als 6 `<Circle>`
+6. **Kein `#RRGGBBAA` in Skia-Komponenten** – rgba() für Opacity
+7. **Kein leerer Path** – immer `moveTo` + `close`
+8. **Neue Elemente hinzufügen, nicht nur skalieren** – Jeder State 1–7 fügt mindestens ein neues sichtbares Skia-Element hinzu
+9. **Jeder State muss im Dev Lab sichtbar sein**
 
 ---
 
@@ -377,7 +430,7 @@ Erweiterungen in `app/dev-lab.tsx`:
 
 | # | Komponente | Status | Datum |
 |---|-----------|--------|-------|
-| 1 | Pet | open | — |
+| 1 | Pet (Sub-Component Refactor) | done | 2026-06-07 |
 | 2 | HangingPlant | open | — |
 | 3 | Aquarium | open | — |
 | 4 | Shelf | open | — |
@@ -393,3 +446,6 @@ Erweiterungen in `app/dev-lab.tsx`:
 | 14 | Wall | open | — |
 | — | Mapping-Doku | open | — |
 | — | Dev Lab States | open | — |
+| — | Animation Toolkit (`useReanimated*` hooks) | done | 2026-06-07 |
+| — | PetShapes (`petShapes.ts`) | done | 2026-06-07 |
+| — | Architecture Rules 2.0 | done | 2026-06-07 |
