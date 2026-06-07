@@ -1,22 +1,72 @@
 {
   "name": "tinycare",
   "version": "1.0.0",
-  "main": "index.ts",
+  "packageManager": "yarn@1.22.22",
+  "main": "expo-router/entry",
   "dependencies": {
+    "@rive-app/react-native": "^0.4.10",
+    "@shopify/react-native-skia": "2.6.2",
+    "date-fns": "^4.4.0",
     "expo": "~56.0.9",
+    "expo-dev-client": "~56.0.19",
+    "expo-haptics": "~56.0.3",
+    "expo-linking": "^56.0.13",
+    "expo-localization": "~56.0.6",
+    "expo-notifications": "~56.0.16",
+    "expo-router": "~56.2.9",
+    "expo-splash-screen": "~56.0.10",
     "expo-status-bar": "~56.0.4",
+    "expo-updates": "~56.0.18",
+    "i18next": "^26.3.1",
+    "lottie-react-native": "~7.3.4",
     "react": "19.2.3",
-    "react-native": "0.85.3"
+    "react-dom": "19.2.3",
+    "react-i18next": "^17.0.8",
+    "react-native": "0.85.3",
+    "react-native-mmkv": "^4.3.1",
+    "react-native-nitro-modules": "0.35.0",
+    "react-native-reanimated": "4.3.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "4.25.2",
+    "react-native-worklets": "0.8.3",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@types/node": "^25.9.2",
     "@types/react": "~19.2.2",
-    "typescript": "~6.0.3"
+    "eas-cli": "^20.1.0",
+    "eslint": "9.39.4",
+    "eslint-config-expo": "^56.0.4",
+    "typescript": "~6.0.3",
+    "vitest": "^4.1.8"
   },
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "start": "expo start --dev-client",
+    "start:expo-go": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "dev:android": "expo run:android",
+    "dev:ios": "expo run:ios",
+    "dev:build:android": "eas build --profile development --platform android",
+    "dev:build:ios": "eas build --profile development --platform ios",
+    "dev:build:all": "eas build --profile development --platform all",
+    "build:preview:android": "eas build --profile preview --platform android",
+    "build:preview:ios": "eas build --profile preview --platform ios",
+    "update:development": "eas update --channel development",
+    "update:preview": "eas update --channel preview",
+    "prebuild": "expo prebuild",
+    "prebuild:clean": "expo prebuild --clean",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "expo:check": "expo install --check",
+    "verify": "yarn lint && yarn typecheck && yarn test && yarn expo:check",
+    "check:project": "yarn verify"
   },
-  "private": true
+  "private": true,
+  "resolutions": {
+    "react-dom": "19.2.3"
+  }
 }
