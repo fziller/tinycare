@@ -432,7 +432,7 @@ Alle neuen Komponenten nutzen folgende Hooks statt der alten Muster:
 |---|-----------|--------|-------|
 | 1 | Pet (Sub-Component Refactor) | done | 2026-06-07 |
 | 2 | HangingPlant | done | 2026-06-07 |
-| 3 | Aquarium | open | — |
+| 3 | Aquarium | done | 2026-06-07 |
 | 4 | Shelf | open | — |
 | 5 | Carafe | open | — |
 | 6 | Floor | open | — |

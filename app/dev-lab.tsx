@@ -15,7 +15,7 @@ import { Floor } from '../src/components/room/Floor';
 import { MainPlant } from '../src/components/room/plant/MainPlant';
 import { HangingPlant } from '../src/components/room/hanging/HangingPlant';
 import { Pet } from '../src/components/room/pet/Pet';
-import { Aquarium } from '../src/components/room/Aquarium';
+import { Aquarium } from '../src/components/room/aquarium/Aquarium';
 import { Carafe } from '../src/components/room/Carafe';
 import { Lamp } from '../src/components/room/Lamp';
 import { Shelf } from '../src/components/room/Shelf';

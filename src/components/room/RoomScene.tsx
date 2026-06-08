@@ -15,7 +15,7 @@ import { MainPlant } from './plant/MainPlant';
 import { HangingPlant } from './hanging/HangingPlant';
 import { PlantPot } from './PlantPot';
 import { Pet } from './pet/Pet';
-import { Aquarium } from './Aquarium';
+import { Aquarium } from './aquarium/Aquarium';
 import { Carafe } from './Carafe';
 import { Particles } from './Particles';
 import { WellnessBar } from './WellnessBar';
