@@ -18,7 +18,7 @@ import { Pet } from '../src/components/room/pet/Pet';
 import { Aquarium } from '../src/components/room/aquarium/Aquarium';
 import { Carafe } from '../src/components/room/Carafe';
 import { Lamp } from '../src/components/room/Lamp';
-import { Shelf } from '../src/components/room/Shelf';
+import { Table } from '../src/components/room/table/Table';
 import { Bookshelf } from '../src/components/room/Bookshelf';
 import { PictureFrame } from '../src/components/room/PictureFrame';
 import { WellnessBar } from '../src/components/room/WellnessBar';
@@ -84,8 +84,8 @@ const ELEMENTS: Record<string, ElementDef> = {
       { key: 'comfort', label: 'Comfort', min: 0, max: 100, default: 72 },
     ],
   },
-  Shelf: {
-    label: 'Shelf',
+  Table: {
+    label: 'Table',
     sliders: [
       { key: 'food', label: 'Food', min: 0, max: 100, default: 72 },
       { key: 'comfort', label: 'Comfort', min: 0, max: 100, default: 72 },
@@ -197,8 +197,8 @@ function renderElement(
       return <Carafe bathroom={values.bathroom} height={height} />;
     case 'Lamp':
       return <Lamp timeOfDay={tod} comfort={values.comfort} height={height} />;
-    case 'Shelf':
-      return <Shelf food={values.food} comfort={values.comfort} glow={values.glow} width={SCENE_W} height={height} />;
+    case 'Table':
+      return <Table food={values.food} comfort={values.comfort} glow={values.glow} width={SCENE_W} height={height} />;
     case 'Bookshelf':
       return <Bookshelf fun={values.fun} glow={values.glow} height={height} />;
     case 'PictureFrame':

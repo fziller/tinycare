@@ -101,7 +101,7 @@ Jeder State fügt **neue sichtbare Elemente** hinzu, nicht nur Skalierung existi
 
 ---
 
-## 4. Shelf — `food × 4` + `glowTier × 2` = **8 States**
+## 4. Table — `food × 4` + `glowTier × 2` = **8 States**
 
 **Status: open**
 
@@ -433,7 +433,7 @@ Alle neuen Komponenten nutzen folgende Hooks statt der alten Muster:
 | 1 | Pet (Sub-Component Refactor) | done | 2026-06-07 |
 | 2 | HangingPlant | done | 2026-06-07 |
 | 3 | Aquarium | done | 2026-06-07 |
-| 4 | Shelf | open | — |
+| 4 | Table (formerly Shelf) | done | 2026-06-08 |
 | 5 | Carafe | open | — |
 | 6 | Floor | open | — |
 | 7 | PictureFrame | open | — |

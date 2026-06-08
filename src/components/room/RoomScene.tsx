@@ -8,7 +8,7 @@ import { Floor } from './Floor';
 import { Window } from './Window';
 import { Sun } from './Sun';
 import { Lamp } from './Lamp';
-import { Shelf } from './Shelf';
+import { Table } from './table/Table';
 import { Bookshelf } from './Bookshelf';
 import { PictureFrame } from './PictureFrame';
 import { MainPlant } from './plant/MainPlant';
@@ -63,7 +63,7 @@ export function RoomScene({ needValues, glow, timeOfDay: _tod, compact = false }
             height={height}
           />
         )}
-        <Shelf
+        <Table
           food={needValues.food ?? 72}
           comfort={needValues.comfort ?? 72}
           glow={glow}
