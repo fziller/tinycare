@@ -11,16 +11,16 @@ import { Canvas } from '@shopify/react-native-skia';
 import { colors, radii, spacing } from '../src/theme';
 import { getTimeOfDay } from '../src/components/room/timeOfDay';
 import { Wall } from '../src/components/room/Wall';
-import { Floor } from '../src/components/room/Floor';
+import { Floor } from '../src/components/room/floor/Floor';
 import { MainPlant } from '../src/components/room/plant/MainPlant';
 import { HangingPlant } from '../src/components/room/hanging/HangingPlant';
 import { Pet } from '../src/components/room/pet/Pet';
 import { Aquarium } from '../src/components/room/aquarium/Aquarium';
-import { Carafe } from '../src/components/room/Carafe';
+import { Carafe } from '../src/components/room/carafe/Carafe';
 import { Lamp } from '../src/components/room/Lamp';
 import { Table } from '../src/components/room/table/Table';
 import { Bookshelf } from '../src/components/room/Bookshelf';
-import { PictureFrame } from '../src/components/room/PictureFrame';
+import { Window } from '../src/components/room/window/Window';
 import { WellnessBar } from '../src/components/room/WellnessBar';
 import { PlantPot } from '../src/components/room/PlantPot';
 import { Particles } from '../src/components/room/Particles';
@@ -76,6 +76,7 @@ const ELEMENTS: Record<string, ElementDef> = {
     label: 'Carafe',
     sliders: [
       { key: 'bathroom', label: 'Bathroom', min: 0, max: 100, default: 72 },
+      { key: 'glow', label: 'Glow', min: 0, max: 100, default: 50 },
     ],
   },
   Lamp: {
@@ -99,10 +100,17 @@ const ELEMENTS: Record<string, ElementDef> = {
       { key: 'glow', label: 'Glow', min: 0, max: 100, default: 50 },
     ],
   },
-  PictureFrame: {
-    label: 'Picture',
+  Window: {
+    label: 'Window',
     sliders: [
       { key: 'averageValue', label: 'Avg Need', min: 0, max: 100, default: 50 },
+      { key: 'glow', label: 'Glow', min: 0, max: 100, default: 50 },
+    ],
+  },
+  Floor: {
+    label: 'Floor',
+    sliders: [
+      { key: 'hygiene', label: 'Hygiene', min: 0, max: 100, default: 50 },
       { key: 'glow', label: 'Glow', min: 0, max: 100, default: 50 },
     ],
   },
@@ -194,15 +202,17 @@ function renderElement(
     case 'Aquarium':
       return <Aquarium fun={values.fun} glow={values.glow} height={height} />;
     case 'Carafe':
-      return <Carafe bathroom={values.bathroom} height={height} />;
+      return <Carafe bathroom={values.bathroom} glow={values.glow} height={height} />;
     case 'Lamp':
       return <Lamp timeOfDay={tod} comfort={values.comfort} height={height} />;
     case 'Table':
       return <Table food={values.food} comfort={values.comfort} glow={values.glow} width={SCENE_W} height={height} />;
     case 'Bookshelf':
       return <Bookshelf fun={values.fun} glow={values.glow} height={height} />;
-    case 'PictureFrame':
-      return <PictureFrame timeOfDay={tod} averageValue={values.averageValue} glow={values.glow} height={height} />;
+    case 'Window':
+      return <Window averageValue={values.averageValue} glow={values.glow} height={height} />;
+    case 'Floor':
+      return <Floor hygiene={values.hygiene} glow={values.glow} height={height} />;
     case 'WellnessBar':
       return <WellnessBar averageValue={values.averageValue} glow={values.glow} height={height} />;
     case 'PlantPot':
@@ -261,7 +271,7 @@ export default function DevLabRoute() {
       <View style={labStyles.canvasWrap}>
         <Canvas style={{ width: SCENE_W, height: SCENE_H }}>
           <Wall timeOfDay={tod} environment={72} width={SCENE_W} height={SCENE_H} />
-          <Floor hygiene={72} width={SCENE_W} height={SCENE_H} />
+          <Floor hygiene={72} glow={values.glow} height={SCENE_H} />
           {renderElement(selected, values, SCENE_H)}
         </Canvas>
       </View>

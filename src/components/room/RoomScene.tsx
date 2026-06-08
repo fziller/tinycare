@@ -4,19 +4,18 @@ import { getTimeOfDay } from './timeOfDay';
 import { useMemo } from 'react';
 import type { RoomSceneProps } from './RoomScene.types';
 import { Wall } from './Wall';
-import { Floor } from './Floor';
-import { Window } from './Window';
+import { Floor } from './floor/Floor';
 import { Sun } from './Sun';
 import { Lamp } from './Lamp';
 import { Table } from './table/Table';
 import { Bookshelf } from './Bookshelf';
-import { PictureFrame } from './PictureFrame';
+import { Window } from './window/Window';
 import { MainPlant } from './plant/MainPlant';
 import { HangingPlant } from './hanging/HangingPlant';
 import { PlantPot } from './PlantPot';
 import { Pet } from './pet/Pet';
 import { Aquarium } from './aquarium/Aquarium';
-import { Carafe } from './Carafe';
+import { Carafe } from './carafe/Carafe';
 import { Particles } from './Particles';
 import { WellnessBar } from './WellnessBar';
 import { colors, radii } from '../../theme';
@@ -45,12 +44,13 @@ export function RoomScene({ needValues, glow, timeOfDay: _tod, compact = false }
         />
         <Floor
           hygiene={needValues.hygiene ?? 72}
-          width={SCENE_W}
+          glow={glow}
           height={height}
         />
         <Window
-          timeOfDay={timeOfDay}
-          hygiene={needValues.hygiene ?? 72}
+          averageValue={averageValue}
+          glow={glow}
+          height={height}
         />
         <Sun
           timeOfDay={timeOfDay}
@@ -77,8 +77,7 @@ export function RoomScene({ needValues, glow, timeOfDay: _tod, compact = false }
             height={height}
           />
         )}
-        <PictureFrame
-          timeOfDay={timeOfDay}
+        <Window
           averageValue={averageValue}
           glow={glow}
           height={height}
@@ -113,6 +112,7 @@ export function RoomScene({ needValues, glow, timeOfDay: _tod, compact = false }
         )}
         <Carafe
           bathroom={needValues.bathroom ?? 72}
+          glow={glow}
           height={height}
         />
         {!compact && (

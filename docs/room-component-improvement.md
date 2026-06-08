@@ -434,9 +434,9 @@ Alle neuen Komponenten nutzen folgende Hooks statt der alten Muster:
 | 2 | HangingPlant | done | 2026-06-07 |
 | 3 | Aquarium | done | 2026-06-07 |
 | 4 | Table (formerly Shelf) | done | 2026-06-08 |
-| 5 | Carafe | open | — |
-| 6 | Floor | open | — |
-| 7 | PictureFrame | open | — |
+| 5 | Carafe | done | 2026-06-08 |
+| 6 | Floor | done | 2026-06-08 |
+| 7 | Window (Weather View) | done | 2026-06-08 |
 | 8 | WellnessBar | open | — |
 | 9 | Window | open | — |
 | 10 | Lamp | open | — |
