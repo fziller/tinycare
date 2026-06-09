@@ -436,9 +436,9 @@ Alle neuen Komponenten nutzen folgende Hooks statt der alten Muster:
 | 4 | Table (formerly Shelf) | done | 2026-06-08 |
 | 5 | Carafe | done | 2026-06-08 |
 | 6 | Floor | done | 2026-06-08 |
-| 7 | Window (Weather View) | done | 2026-06-08 |
+| 7 | Window (Weather View) | done | 2026-06-09 |
 | 8 | WellnessBar | open | — |
-| 9 | Window | open | — |
+| 9 | Lamp | open | — |
 | 10 | Lamp | open | — |
 | 11 | Bookshelf | open | — |
 | 12 | Particles | open | — |

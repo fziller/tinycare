@@ -14,16 +14,17 @@ import { Wall } from '../src/components/room/Wall';
 import { Floor } from '../src/components/room/floor/Floor';
 import { MainPlant } from '../src/components/room/plant/MainPlant';
 import { HangingPlant } from '../src/components/room/hanging/HangingPlant';
-import { Pet } from '../src/components/room/pet/Pet';
 import { Aquarium } from '../src/components/room/aquarium/Aquarium';
 import { Carafe } from '../src/components/room/carafe/Carafe';
 import { Lamp } from '../src/components/room/Lamp';
 import { Table } from '../src/components/room/table/Table';
 import { Bookshelf } from '../src/components/room/Bookshelf';
-import { Window } from '../src/components/room/window/Window';
+import { WindowLottie } from '../src/components/room/window/WindowLottie';
+import { getWindowState, type WindowState } from '../src/components/room/window/windowState';
 import { WellnessBar } from '../src/components/room/WellnessBar';
 import { PlantPot } from '../src/components/room/PlantPot';
 import { Particles } from '../src/components/room/Particles';
+import { Pet, getPetState, type PetState } from '../src/components/room/pet/Pet';
 
 const SCENE_W = 360;
 const SCENE_H = 240;
@@ -183,9 +184,13 @@ function renderElement(
   selected: string,
   values: Record<string, number>,
   height: number,
+  forcedPetState: PetState | null,
+  forcedWindowState: WindowState | null,
 ) {
   const baseY = height - 30;
   const tod = getTimeOfDay();
+  const petState = forcedPetState ?? getPetState(values.social ?? 72, values.movement ?? 72, values.glow ?? 50);
+  const windowState = forcedWindowState ?? getWindowState(values.averageValue ?? 50, values.glow ?? 50);
 
   switch (selected) {
     case 'MainPlant':
@@ -198,7 +203,7 @@ function renderElement(
     case 'HangingPlant':
       return <HangingPlant hydration={values.hydration} glow={values.glow} />;
     case 'Pet':
-      return <Pet social={values.social} movement={values.movement} glow={values.glow} height={height} />;
+      return <Pet targetState={petState} />;
     case 'Aquarium':
       return <Aquarium fun={values.fun} glow={values.glow} height={height} />;
     case 'Carafe':
@@ -210,7 +215,7 @@ function renderElement(
     case 'Bookshelf':
       return <Bookshelf fun={values.fun} glow={values.glow} height={height} />;
     case 'Window':
-      return <Window averageValue={values.averageValue} glow={values.glow} height={height} />;
+      return <WindowLottie targetState={windowState} />;
     case 'Floor':
       return <Floor hygiene={values.hygiene} glow={values.glow} height={height} />;
     case 'WellnessBar':
@@ -228,10 +233,14 @@ export default function DevLabRoute() {
   const [selected, setSelected] = useState<string>('MainPlant');
   const def = ELEMENTS[selected];
   const [values, setValues] = useState<Record<string, number>>(getDefaultValues(def));
+  const [forcedPetState, setForcedPetState] = useState<PetState | null>(null);
+  const [forcedWindowState, setForcedWindowState] = useState<WindowState | null>(null);
 
   const handleSelect = (key: string) => {
     setSelected(key);
     setValues(getDefaultValues(ELEMENTS[key]));
+    if (key !== 'Pet') setForcedPetState(null);
+    if (key !== 'Window') setForcedWindowState(null);
   };
 
   const handleSlider = (key: string, val: number) => {
@@ -239,6 +248,10 @@ export default function DevLabRoute() {
   };
 
   const tod = getTimeOfDay();
+  const computedPetState = getPetState(values.social ?? 72, values.movement ?? 72, values.glow ?? 50);
+  const computedWindowState = getWindowState(values.averageValue ?? 50, values.glow ?? 50);
+  const isPetPreview = selected === 'Pet';
+  const isWindowPreview = selected === 'Window';
 
   return (
     <View style={labStyles.safeArea}>
@@ -269,15 +282,77 @@ export default function DevLabRoute() {
       </ScrollView>
 
       <View style={labStyles.canvasWrap}>
-        <Canvas style={{ width: SCENE_W, height: SCENE_H }}>
-          <Wall timeOfDay={tod} environment={72} width={SCENE_W} height={SCENE_H} />
-          <Floor hygiene={72} glow={values.glow} height={SCENE_H} />
-          {renderElement(selected, values, SCENE_H)}
-        </Canvas>
+        {selected === 'Pet' ? (
+          <View style={labStyles.petPreviewStage}>
+            <View style={labStyles.petLottieWrap}>
+              {renderElement(selected, values, SCENE_H, forcedPetState, forcedWindowState)}
+            </View>
+          </View>
+        ) : selected === 'Window' ? (
+          <View style={labStyles.windowPreviewStage}>
+            <View style={labStyles.windowLottieWrap}>
+              {renderElement(selected, values, SCENE_H, forcedPetState, forcedWindowState)}
+            </View>
+          </View>
+        ) : (
+          <Canvas style={{ width: SCENE_W, height: SCENE_H }}>
+            {!isPetPreview && !isWindowPreview && <Wall timeOfDay={tod} environment={72} width={SCENE_W} height={SCENE_H} />}
+            {!isPetPreview && !isWindowPreview && <Floor hygiene={72} glow={values.glow} height={SCENE_H} />}
+            {renderElement(selected, values, SCENE_H, forcedPetState, forcedWindowState)}
+          </Canvas>
+        )}
       </View>
 
       <View style={labStyles.sliderPanel}>
         <Text style={labStyles.sliderTitle}>{def.label} Controls</Text>
+        {isPetPreview && (
+          <View style={labStyles.petStatePanel}>
+            <Text style={labStyles.sliderLabel}>
+              State <Text style={labStyles.sliderValueInline}>{forcedPetState ?? computedPetState}</Text>
+            </Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={labStyles.petStateRow}>
+              <Pressable
+                onPress={() => setForcedPetState(null)}
+                style={[labStyles.stateChip, forcedPetState == null && labStyles.stateChipSelected]}
+              >
+                <Text style={[labStyles.stateChipText, forcedPetState == null && labStyles.stateChipTextSelected]}>auto</Text>
+              </Pressable>
+              {Array.from({ length: 8 }, (_, index) => index as PetState).map((state) => (
+                <Pressable
+                  key={state}
+                  onPress={() => setForcedPetState(state)}
+                  style={[labStyles.stateChip, forcedPetState === state && labStyles.stateChipSelected]}
+                >
+                  <Text style={[labStyles.stateChipText, forcedPetState === state && labStyles.stateChipTextSelected]}>{state}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+        {isWindowPreview && (
+          <View style={labStyles.petStatePanel}>
+            <Text style={labStyles.sliderLabel}>
+              State <Text style={labStyles.sliderValueInline}>{forcedWindowState ?? computedWindowState}</Text>
+            </Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={labStyles.petStateRow}>
+              <Pressable
+                onPress={() => setForcedWindowState(null)}
+                style={[labStyles.stateChip, forcedWindowState == null && labStyles.stateChipSelected]}
+              >
+                <Text style={[labStyles.stateChipText, forcedWindowState == null && labStyles.stateChipTextSelected]}>auto</Text>
+              </Pressable>
+              {Array.from({ length: 8 }, (_, index) => index as WindowState).map((state) => (
+                <Pressable
+                  key={state}
+                  onPress={() => setForcedWindowState(state)}
+                  style={[labStyles.stateChip, forcedWindowState === state && labStyles.stateChipSelected]}
+                >
+                  <Text style={[labStyles.stateChipText, forcedWindowState === state && labStyles.stateChipTextSelected]}>{state}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+        )}
         {def.sliders.map((s) => (
           <View key={s.key} style={labStyles.sliderGroup}>
             <Text style={labStyles.sliderLabel}>
@@ -362,6 +437,32 @@ const labStyles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: spacing.sm,
   },
+  windowPreviewStage: {
+    width: SCENE_W,
+    height: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  windowLottieWrap: {
+    width: 270,
+    height: 60,
+  },
+  petPreviewStage: {
+    width: SCENE_W,
+    height: SCENE_H,
+    position: 'relative',
+    backgroundColor: colors.cardWarm,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.line,
+  },
+  petLottieWrap: {
+    position: 'absolute',
+    left: 125,
+    top: 58,
+    width: 110,
+    height: 110,
+  },
   sliderPanel: {
     flex: 1,
     marginHorizontal: spacing.lg,
@@ -379,6 +480,33 @@ const labStyles = StyleSheet.create({
   },
   sliderGroup: {
     gap: spacing.xs,
+  },
+  petStatePanel: {
+    gap: spacing.xs,
+  },
+  petStateRow: {
+    gap: spacing.xs,
+  },
+  stateChip: {
+    minHeight: 30,
+    paddingHorizontal: spacing.sm,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.page,
+    justifyContent: 'center',
+  },
+  stateChipSelected: {
+    backgroundColor: colors.teal,
+    borderColor: colors.teal,
+  },
+  stateChipText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.muted,
+  },
+  stateChipTextSelected: {
+    color: '#FFFFFF',
   },
   sliderLabel: {
     fontSize: 13,

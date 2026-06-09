@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 import { getTimeOfDay } from './timeOfDay';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { RoomSceneProps } from './RoomScene.types';
 import { Wall } from './Wall';
 import { Floor } from './floor/Floor';
@@ -10,10 +10,13 @@ import { Lamp } from './Lamp';
 import { Table } from './table/Table';
 import { Bookshelf } from './Bookshelf';
 import { Window } from './window/Window';
+import { getWindowOverlayLayout } from './window/windowLayout';
 import { MainPlant } from './plant/MainPlant';
 import { HangingPlant } from './hanging/HangingPlant';
 import { PlantPot } from './PlantPot';
 import { Pet } from './pet/Pet';
+import { getPetOverlayLayout } from './pet/petLayout';
+import { getPetState } from './pet/petState';
 import { Aquarium } from './aquarium/Aquarium';
 import { Carafe } from './carafe/Carafe';
 import { Particles } from './Particles';
@@ -26,6 +29,7 @@ const SCENE_H = 240;
 export function RoomScene({ needValues, glow, timeOfDay: _tod, compact = false }: RoomSceneProps) {
   const timeOfDay = _tod ?? getTimeOfDay();
   const height = compact ? 116 : SCENE_H;
+  const [frameWidth, setFrameWidth] = useState(SCENE_W);
 
   const averageValue = useMemo(() => {
     const vals = Object.values(needValues).filter((v) => typeof v === 'number');
@@ -33,9 +37,19 @@ export function RoomScene({ needValues, glow, timeOfDay: _tod, compact = false }
     return Math.round(vals.reduce((s, v) => s + v, 0) / vals.length);
   }, [needValues]);
 
+  const petLayout = getPetOverlayLayout(frameWidth, height, compact);
+  const windowLayout = getWindowOverlayLayout(frameWidth, height, compact);
+  const petTargetState = getPetState(needValues.social ?? 72, needValues.movement ?? 72, glow);
+
   return (
-    <View style={[styles.frame, compact && styles.compactFrame]}>
-      <Canvas style={{ height }}>
+    <View
+      style={[styles.frame, compact && styles.compactFrame, { height }]}
+      onLayout={(event) => {
+        const nextWidth = event.nativeEvent.layout.width;
+        if (nextWidth > 0 && Math.abs(nextWidth - frameWidth) > 1) setFrameWidth(nextWidth);
+      }}
+    >
+      <Canvas style={StyleSheet.absoluteFill}>
         <Wall
           timeOfDay={timeOfDay}
           environment={needValues.environment ?? 72}
@@ -47,11 +61,28 @@ export function RoomScene({ needValues, glow, timeOfDay: _tod, compact = false }
           glow={glow}
           height={height}
         />
-        <Window
-          averageValue={averageValue}
-          glow={glow}
-          height={height}
-        />
+      </Canvas>
+      {!compact && (
+        <View
+          pointerEvents="none"
+          style={[
+            styles.windowOverlay,
+            {
+              left: windowLayout.left,
+              top: windowLayout.top,
+              width: windowLayout.width,
+              height: windowLayout.height,
+            },
+          ]}
+        >
+          <Window
+            averageValue={averageValue}
+            glow={glow}
+            height={height}
+          />
+        </View>
+      )}
+      <Canvas style={StyleSheet.absoluteFill}>
         <Sun
           timeOfDay={timeOfDay}
           energy={needValues.energy ?? 72}
@@ -77,11 +108,6 @@ export function RoomScene({ needValues, glow, timeOfDay: _tod, compact = false }
             height={height}
           />
         )}
-        <Window
-          averageValue={averageValue}
-          glow={glow}
-          height={height}
-        />
         <MainPlant
           hydration={needValues.hydration ?? 72}
           glow={glow}
@@ -95,14 +121,29 @@ export function RoomScene({ needValues, glow, timeOfDay: _tod, compact = false }
           />
         )}
         <PlantPot glow={glow} baseY={height - 30} />
-        {!compact && (
-          <Pet
-            social={needValues.social ?? 72}
-            movement={needValues.movement ?? 72}
-            glow={glow}
-            height={height}
-          />
-        )}
+        <Carafe
+          bathroom={needValues.bathroom ?? 72}
+          glow={glow}
+          height={height}
+        />
+      </Canvas>
+      {!compact && (
+        <View
+          pointerEvents="none"
+          style={[
+            styles.petOverlay,
+            {
+              left: petLayout.left,
+              top: petLayout.top,
+              width: petLayout.width,
+              height: petLayout.height,
+            },
+          ]}
+        >
+          <Pet targetState={petTargetState} />
+        </View>
+      )}
+      <Canvas style={StyleSheet.absoluteFill}>
         {!compact && (
           <Aquarium
             fun={needValues.fun ?? 72}
@@ -110,11 +151,6 @@ export function RoomScene({ needValues, glow, timeOfDay: _tod, compact = false }
             height={height}
           />
         )}
-        <Carafe
-          bathroom={needValues.bathroom ?? 72}
-          glow={glow}
-          height={height}
-        />
         {!compact && (
           <Particles
             glow={glow}
@@ -145,5 +181,11 @@ const styles = StyleSheet.create({
   },
   compactFrame: {
     borderRadius: radii.md,
+  },
+  petOverlay: {
+    position: 'absolute',
+  },
+  windowOverlay: {
+    position: 'absolute',
   },
 });
