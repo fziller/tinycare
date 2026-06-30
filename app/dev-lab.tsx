@@ -14,7 +14,9 @@ import { Wall } from '../src/components/room/Wall';
 import { Floor } from '../src/components/room/floor/Floor';
 import { MainPlant } from '../src/components/room/plant/MainPlant';
 import { HangingPlant } from '../src/components/room/hanging/HangingPlant';
-import { Aquarium } from '../src/components/room/aquarium/Aquarium';
+import { AquariumLottie } from '../src/components/room/aquarium/AquariumLottie';
+import { getAquariumOverlayLayout } from '../src/components/room/aquarium/aquariumLayout';
+import { getAquariumState, type AquariumState } from '../src/components/room/aquarium/aquariumState';
 import { Carafe } from '../src/components/room/carafe/Carafe';
 import { Lamp } from '../src/components/room/Lamp';
 import { Table } from '../src/components/room/table/Table';
@@ -186,11 +188,14 @@ function renderElement(
   height: number,
   forcedPetState: PetState | null,
   forcedWindowState: WindowState | null,
+  forcedAquariumState: AquariumState | null,
 ) {
   const baseY = height - 30;
   const tod = getTimeOfDay();
   const petState = forcedPetState ?? getPetState(values.social ?? 72, values.movement ?? 72, values.glow ?? 50);
   const windowState = forcedWindowState ?? getWindowState(values.averageValue ?? 50, values.glow ?? 50);
+  const aquariumState = forcedAquariumState ?? getAquariumState(values.fun ?? 72, values.glow ?? 50);
+  const aquariumLayout = getAquariumOverlayLayout(SCENE_W, height, false);
 
   switch (selected) {
     case 'MainPlant':
@@ -205,7 +210,22 @@ function renderElement(
     case 'Pet':
       return <Pet targetState={petState} />;
     case 'Aquarium':
-      return <Aquarium fun={values.fun} glow={values.glow} height={height} />;
+      return (
+        <View
+          pointerEvents="none"
+          style={[
+            labStyles.aquariumLottieWrap,
+            {
+              left: aquariumLayout.left,
+              top: aquariumLayout.top,
+              width: aquariumLayout.width,
+              height: aquariumLayout.height,
+            },
+          ]}
+        >
+          <AquariumLottie targetState={aquariumState} />
+        </View>
+      );
     case 'Carafe':
       return <Carafe bathroom={values.bathroom} glow={values.glow} height={height} />;
     case 'Lamp':
@@ -235,12 +255,14 @@ export default function DevLabRoute() {
   const [values, setValues] = useState<Record<string, number>>(getDefaultValues(def));
   const [forcedPetState, setForcedPetState] = useState<PetState | null>(null);
   const [forcedWindowState, setForcedWindowState] = useState<WindowState | null>(null);
+  const [forcedAquariumState, setForcedAquariumState] = useState<AquariumState | null>(null);
 
   const handleSelect = (key: string) => {
     setSelected(key);
     setValues(getDefaultValues(ELEMENTS[key]));
     if (key !== 'Pet') setForcedPetState(null);
     if (key !== 'Window') setForcedWindowState(null);
+    if (key !== 'Aquarium') setForcedAquariumState(null);
   };
 
   const handleSlider = (key: string, val: number) => {
@@ -250,8 +272,10 @@ export default function DevLabRoute() {
   const tod = getTimeOfDay();
   const computedPetState = getPetState(values.social ?? 72, values.movement ?? 72, values.glow ?? 50);
   const computedWindowState = getWindowState(values.averageValue ?? 50, values.glow ?? 50);
+  const computedAquariumState = getAquariumState(values.fun ?? 72, values.glow ?? 50);
   const isPetPreview = selected === 'Pet';
   const isWindowPreview = selected === 'Window';
+  const isAquariumPreview = selected === 'Aquarium';
 
   return (
     <View style={labStyles.safeArea}>
@@ -285,20 +309,28 @@ export default function DevLabRoute() {
         {selected === 'Pet' ? (
           <View style={labStyles.petPreviewStage}>
             <View style={labStyles.petLottieWrap}>
-              {renderElement(selected, values, SCENE_H, forcedPetState, forcedWindowState)}
+              {renderElement(selected, values, SCENE_H, forcedPetState, forcedWindowState, forcedAquariumState)}
             </View>
           </View>
         ) : selected === 'Window' ? (
           <View style={labStyles.windowPreviewStage}>
             <View style={labStyles.windowLottieWrap}>
-              {renderElement(selected, values, SCENE_H, forcedPetState, forcedWindowState)}
+              {renderElement(selected, values, SCENE_H, forcedPetState, forcedWindowState, forcedAquariumState)}
             </View>
+          </View>
+        ) : selected === 'Aquarium' ? (
+          <View style={labStyles.aquariumPreviewStage}>
+            <Canvas style={StyleSheet.absoluteFill}>
+              <Wall timeOfDay={tod} environment={72} width={SCENE_W} height={SCENE_H} />
+              <Floor hygiene={72} glow={values.glow} height={SCENE_H} />
+            </Canvas>
+            {renderElement(selected, values, SCENE_H, forcedPetState, forcedWindowState, forcedAquariumState)}
           </View>
         ) : (
           <Canvas style={{ width: SCENE_W, height: SCENE_H }}>
             {!isPetPreview && !isWindowPreview && <Wall timeOfDay={tod} environment={72} width={SCENE_W} height={SCENE_H} />}
             {!isPetPreview && !isWindowPreview && <Floor hygiene={72} glow={values.glow} height={SCENE_H} />}
-            {renderElement(selected, values, SCENE_H, forcedPetState, forcedWindowState)}
+            {renderElement(selected, values, SCENE_H, forcedPetState, forcedWindowState, forcedAquariumState)}
           </Canvas>
         )}
       </View>
@@ -348,6 +380,30 @@ export default function DevLabRoute() {
                   style={[labStyles.stateChip, forcedWindowState === state && labStyles.stateChipSelected]}
                 >
                   <Text style={[labStyles.stateChipText, forcedWindowState === state && labStyles.stateChipTextSelected]}>{state}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+        {isAquariumPreview && (
+          <View style={labStyles.petStatePanel}>
+            <Text style={labStyles.sliderLabel}>
+              State <Text style={labStyles.sliderValueInline}>{forcedAquariumState ?? computedAquariumState}</Text>
+            </Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={labStyles.petStateRow}>
+              <Pressable
+                onPress={() => setForcedAquariumState(null)}
+                style={[labStyles.stateChip, forcedAquariumState == null && labStyles.stateChipSelected]}
+              >
+                <Text style={[labStyles.stateChipText, forcedAquariumState == null && labStyles.stateChipTextSelected]}>auto</Text>
+              </Pressable>
+              {Array.from({ length: 8 }, (_, index) => index as AquariumState).map((state) => (
+                <Pressable
+                  key={state}
+                  onPress={() => setForcedAquariumState(state)}
+                  style={[labStyles.stateChip, forcedAquariumState === state && labStyles.stateChipSelected]}
+                >
+                  <Text style={[labStyles.stateChipText, forcedAquariumState === state && labStyles.stateChipTextSelected]}>{state}</Text>
                 </Pressable>
               ))}
             </ScrollView>
@@ -462,6 +518,19 @@ const labStyles = StyleSheet.create({
     top: 58,
     width: 110,
     height: 110,
+  },
+  aquariumPreviewStage: {
+    width: SCENE_W,
+    height: SCENE_H,
+    position: 'relative',
+    backgroundColor: colors.cardWarm,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.line,
+    overflow: 'hidden',
+  },
+  aquariumLottieWrap: {
+    position: 'absolute',
   },
   sliderPanel: {
     flex: 1,

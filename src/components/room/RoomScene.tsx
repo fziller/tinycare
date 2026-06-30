@@ -18,6 +18,7 @@ import { Pet } from './pet/Pet';
 import { getPetOverlayLayout } from './pet/petLayout';
 import { getPetState } from './pet/petState';
 import { Aquarium } from './aquarium/Aquarium';
+import { getAquariumOverlayLayout } from './aquarium/aquariumLayout';
 import { Carafe } from './carafe/Carafe';
 import { Particles } from './Particles';
 import { WellnessBar } from './WellnessBar';
@@ -39,6 +40,7 @@ export function RoomScene({ needValues, glow, timeOfDay: _tod, compact = false }
 
   const petLayout = getPetOverlayLayout(frameWidth, height, compact);
   const windowLayout = getWindowOverlayLayout(frameWidth, height, compact);
+  const aquariumLayout = getAquariumOverlayLayout(frameWidth, height, compact);
   const petTargetState = getPetState(needValues.social ?? 72, needValues.movement ?? 72, glow);
 
   return (
@@ -143,14 +145,27 @@ export function RoomScene({ needValues, glow, timeOfDay: _tod, compact = false }
           <Pet targetState={petTargetState} />
         </View>
       )}
-      <Canvas style={StyleSheet.absoluteFill}>
-        {!compact && (
+      {!compact && (
+        <View
+          pointerEvents="none"
+          style={[
+            styles.aquariumOverlay,
+            {
+              left: aquariumLayout.left,
+              top: aquariumLayout.top,
+              width: aquariumLayout.width,
+              height: aquariumLayout.height,
+            },
+          ]}
+        >
           <Aquarium
             fun={needValues.fun ?? 72}
             glow={glow}
             height={height}
           />
-        )}
+        </View>
+      )}
+      <Canvas style={StyleSheet.absoluteFill}>
         {!compact && (
           <Particles
             glow={glow}
@@ -183,6 +198,9 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
   },
   petOverlay: {
+    position: 'absolute',
+  },
+  aquariumOverlay: {
     position: 'absolute',
   },
   windowOverlay: {
